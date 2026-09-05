@@ -7,16 +7,81 @@ import {
   TouchableOpacity,
   useWindowDimensions,
   Modal,
-  Image, // 1. Import Image เพิ่มเข้ามา
+  Image,
 } from 'react-native';
+
+// ==========================================
+// ข้อมูลแปลภาษา (Translations)
+// ==========================================
+const translations = {
+  en: {
+    nav: {
+      home: 'Home',
+      about: 'About',
+      portfolio: 'Portfolio',
+      blog: 'Blog',
+      contact: 'Contact',
+    },
+    // --- ชื่อและข้อมูลภาษาอังกฤษ ---
+    home: {
+      greeting: "HELLO, I'M",
+      name: 'Pichet Thimachai', // ดึงชื่อภาษาอังกฤษมาไว้ที่นี่
+      role: 'A Creative Full Stack Developer based in Thailand.',
+      downloadCv: 'Download CV',
+    },
+    about: {
+      title: 'About Me',
+      description:
+        'I am a passionate Full Stack Developer based in Khon Kaen, Thailand. I have a strong interest in building modern, responsive web and mobile applications. I love learning new technologies and solving complex problems with clean code.',
+      nameLabel: 'Name:',
+      emailLabel: 'Email:',
+      locationLabel: 'Location:',
+      locationValue: 'Khon Kaen, Thailand',
+      freelanceLabel: 'Freelance:',
+      freelanceValue: 'Available',
+      skillsTitle: 'My Skills',
+    },
+  },
+  th: {
+    nav: {
+      home: 'หน้าแรก',
+      about: 'เกี่ยวกับฉัน',
+      portfolio: 'ผลงาน',
+      blog: 'บทความ',
+      contact: 'ติดต่อ',
+    },
+    // --- ชื่อและข้อมูลภาษาไทย ---
+    home: {
+      greeting: 'สวัสดี ผมคือ',
+      name: 'พิเชฐ ธิมาไชย', // ดึงชื่อภาษาไทยมาไว้ที่นี่
+      role: 'นักพัฒนา Full Stack อาศัยอยู่ในประเทศไทย',
+      downloadCv: 'ดาวน์โหลดเรซูเม่',
+    },
+    about: {
+      title: 'เกี่ยวกับฉัน',
+      description:
+        'ผมเป็น Full Stack Developer ที่หลงใหลในการเขียนโค้ด อาศัยอยู่ที่จังหวัดขอนแก่น มีความสนใจในการสร้างเว็บและแอปพลิเคชันมือถือที่ทันสมัย ผมชอบเรียนรู้เทคโนโลยีใหม่ๆ และแก้ปัญหาด้วยโค้ดที่สะอาดสะอ้าน',
+      nameLabel: 'ชื่อ:',
+      emailLabel: 'อีเมล:',
+      locationLabel: 'ที่อยู่:',
+      locationValue: 'ขอนแก่น, ประเทศไทย',
+      freelanceLabel: 'รับงานอิสระ:',
+      freelanceValue: 'รับงาน',
+      skillsTitle: 'ทักษะของฉัน',
+    },
+  },
+};
 
 export default function PortfolioWeb() {
   const [activeTab, setActiveTab] = useState('Home');
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [lang, setLang] = useState('en');
 
   const { width } = useWindowDimensions();
   const isMobile = width < 768;
+
+  const t = translations[lang];
 
   const theme = {
     bg: isDarkMode ? '#0F172A' : '#FFFFFF',
@@ -28,13 +93,12 @@ export default function PortfolioWeb() {
     toggleText: isDarkMode ? '#000000' : '#FFFFFF',
   };
 
-  const menuItems = ['Home', 'About', 'Portfolio', 'Blog', 'Contact'];
-
   const handleMenuPress = (item) => {
     setActiveTab(item);
     setIsMenuOpen(false);
   };
 
+  // --- แถบเมนูด้านบน ---
   const renderNavbar = () => (
     <View
       style={[
@@ -52,27 +116,42 @@ export default function PortfolioWeb() {
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 15 }}>
         {!isMobile && (
           <View style={styles.menuContainer}>
-            {menuItems.map((item) => (
-              <TouchableOpacity
-                key={item}
-                onPress={() => handleMenuPress(item)}
-              >
-                <Text
-                  style={[
-                    styles.menuItem,
-                    { color: theme.subText },
-                    activeTab === item && {
-                      color: theme.accent,
-                      fontWeight: 'bold',
-                    },
-                  ]}
-                >
-                  {item}
-                </Text>
-              </TouchableOpacity>
-            ))}
+            {['home', 'about', 'portfolio', 'blog', 'contact'].map(
+              (itemKey) => {
+                const tabName =
+                  itemKey.charAt(0).toUpperCase() + itemKey.slice(1);
+                return (
+                  <TouchableOpacity
+                    key={itemKey}
+                    onPress={() => handleMenuPress(tabName)}
+                  >
+                    <Text
+                      style={[
+                        styles.menuItem,
+                        { color: theme.subText },
+                        activeTab === tabName && {
+                          color: theme.accent,
+                          fontWeight: 'bold',
+                        },
+                      ]}
+                    >
+                      {t.nav[itemKey]}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              },
+            )}
           </View>
         )}
+
+        <TouchableOpacity
+          style={[styles.langBtn, { borderColor: theme.accent }]}
+          onPress={() => setLang(lang === 'en' ? 'th' : 'en')}
+        >
+          <Text style={{ color: theme.text, fontWeight: 'bold' }}>
+            {lang.toUpperCase()}
+          </Text>
+        </TouchableOpacity>
 
         <TouchableOpacity
           style={[styles.toggleBtn, { backgroundColor: theme.toggleBtn }]}
@@ -92,6 +171,7 @@ export default function PortfolioWeb() {
     </View>
   );
 
+  // --- เมนูสำหรับมือถือ ---
   const renderMobileMenu = () => (
     <Modal visible={isMenuOpen} animationType="fade" transparent={true}>
       <View style={[styles.fullScreenMenu, { backgroundColor: theme.bg }]}>
@@ -102,41 +182,40 @@ export default function PortfolioWeb() {
           <Text style={{ fontSize: 32, color: theme.text }}>✕</Text>
         </TouchableOpacity>
 
-        {menuItems.map((item) => (
-          <TouchableOpacity
-            key={item}
-            onPress={() => handleMenuPress(item)}
-            style={{ marginVertical: 15 }}
-          >
-            <Text
-              style={[
-                styles.mobileMenuText,
-                { color: theme.subText },
-                activeTab === item && {
-                  color: theme.accent,
-                  fontWeight: 'bold',
-                },
-              ]}
+        {['home', 'about', 'portfolio', 'blog', 'contact'].map((itemKey) => {
+          const tabName = itemKey.charAt(0).toUpperCase() + itemKey.slice(1);
+          return (
+            <TouchableOpacity
+              key={itemKey}
+              onPress={() => handleMenuPress(tabName)}
+              style={{ marginVertical: 15 }}
             >
-              {item}
-            </Text>
-          </TouchableOpacity>
-        ))}
+              <Text
+                style={[
+                  styles.mobileMenuText,
+                  { color: theme.subText },
+                  activeTab === tabName && {
+                    color: theme.accent,
+                    fontWeight: 'bold',
+                  },
+                ]}
+              >
+                {t.nav[itemKey]}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
       </View>
     </Modal>
   );
 
-  // --- ส่วนหน้า Home ที่อัปเดต (เพิ่มรูปภาพและจัดกลาง) ---
+  // --- หน้า Home ---
   const renderHome = () => (
-    // ปรับสไตล์ section ให้จัดกลาง (alignItems: 'center')
     <View style={[styles.section, { alignItems: 'center' }]}>
-      {/* 2. เพิ่ม Image Component ตรงนี้ */}
       <Image
-        // ใส่ URL รูปภาพโปรไฟล์ของคุณที่นี่
         source={require('./assets/icon.png')}
         style={[styles.profileImage, { borderColor: theme.accent }]}
       />
-
       <Text
         style={{
           color: theme.accent,
@@ -145,12 +224,12 @@ export default function PortfolioWeb() {
           marginTop: 20,
         }}
       >
-        HELLO, I'M
+        {t.home.greeting}
       </Text>
 
-      {/* ปรับ Text ให้จัดกลางด้วย (textAlign: 'center') */}
+      {/* 🔴 ดึงชื่อจาก translations (เปลี่ยนตามภาษา) */}
       <Text style={[styles.title, { color: theme.text, textAlign: 'center' }]}>
-        Pichet Thimachai
+        {t.home.name}
       </Text>
 
       <Text
@@ -162,18 +241,19 @@ export default function PortfolioWeb() {
           textAlign: 'center',
         }}
       >
-        A Creative Full Stack Developer based in Thailand.
+        {t.home.role}
       </Text>
-
       <TouchableOpacity
         style={{ backgroundColor: theme.accent, padding: 15, borderRadius: 8 }}
       >
-        <Text style={{ color: '#000', fontWeight: 'bold' }}>Download CV</Text>
+        <Text style={{ color: '#000', fontWeight: 'bold' }}>
+          {t.home.downloadCv}
+        </Text>
       </TouchableOpacity>
     </View>
   );
 
-  // --- ฟังก์ชันสำหรับสร้างหลอดพลัง Skills ---
+  // --- ฟังก์ชันสร้างหลอดพลัง Skills ---
   const renderSkill = (skillName, percentage) => (
     <View style={styles.skillItem} key={skillName}>
       <View style={styles.skillHeader}>
@@ -198,26 +278,24 @@ export default function PortfolioWeb() {
     </View>
   );
 
-  // --- ส่วนหน้า About ---
+  // --- หน้า About ---
   const renderAbout = () => (
     <View style={styles.section}>
-      <Text style={[styles.sectionTitle, { color: theme.text }]}>About Me</Text>
-
-      {/* 1. คำอธิบายแนะนำตัว */}
+      <Text style={[styles.sectionTitle, { color: theme.text }]}>
+        {t.about.title}
+      </Text>
       <Text style={[styles.aboutText, { color: theme.subText }]}>
-        I am a passionate Full Stack Developer based in Khon Kaen, Thailand. I
-        have a strong interest in building modern, responsive web and mobile
-        applications. I love learning new technologies and solving complex
-        problems with clean code.
+        {t.about.description}
       </Text>
 
-      {/* 2. ข้อมูลส่วนตัว (จัดเรียงเป็น 2 คอลัมน์บนจอคอม, 1 คอลัมน์บนมือถือ) */}
       <View style={styles.infoGrid}>
         {[
-          { label: 'Name:', value: 'Pichet Thimachai' },
-          { label: 'Email:', value: 'your.email@example.com' },
-          { label: 'Location:', value: 'Khon Kaen, Thailand' },
-          { label: 'Freelance:', value: 'Available' },
+          // 🔴 ดึงชื่อจาก t.home.name (เพื่อให้เปลี่ยนตามภาษาเหมือนหน้า Home)
+          { label: t.about.nameLabel, value: t.home.name },
+
+          { label: t.about.emailLabel, value: 'your.email@example.com' },
+          { label: t.about.locationLabel, value: t.about.locationValue },
+          { label: t.about.freelanceLabel, value: t.about.freelanceValue },
         ].map((info, index) => (
           <View
             key={index}
@@ -233,8 +311,9 @@ export default function PortfolioWeb() {
         ))}
       </View>
 
-      {/* 3. ส่วนทักษะ (Skills) */}
-      <Text style={[styles.subTitle, { color: theme.text }]}>My Skills</Text>
+      <Text style={[styles.subTitle, { color: theme.text }]}>
+        {t.about.skillsTitle}
+      </Text>
       <View style={styles.skillsContainer}>
         {renderSkill('React Native', '90%')}
         {renderSkill('React.js', '85%')}
@@ -249,16 +328,15 @@ export default function PortfolioWeb() {
       {renderNavbar()}
       {renderMobileMenu()}
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        {/* เปลี่ยนตรงนี้เพื่อให้รองรับหน้า About */}
         {activeTab === 'Home' && renderHome()}
         {activeTab === 'About' && renderAbout()}
 
-        {/* หน้าอื่นๆ ที่ยังไม่ได้ทำ ให้โชว์ชื่อหน้าไปก่อน */}
         {['Portfolio', 'Blog', 'Contact'].includes(activeTab) && (
-          <View style={styles.section}>
+          <View style={[styles.section, { alignItems: 'center' }]}>
             <Text style={[styles.title, { color: theme.text }]}>
               {activeTab} Page
             </Text>
+            <Text style={{ color: theme.subText }}>Coming soon...</Text>
           </View>
         )}
       </ScrollView>
@@ -267,119 +345,139 @@ export default function PortfolioWeb() {
 }
 
 const styles = StyleSheet.create({
+  // ==========================================
   // 1. โครงสร้างหลักของแอปพลิเคชัน
+  // ==========================================
   container: {
-    flex: 1, // บังคับให้ใช้พื้นที่ความสูงเต็มหน้าจอ
+    flex: 1, // บังคับให้หน้าต่าง(View) หลักใช้พื้นที่ความสูงเต็มหน้าจออุปกรณ์
   },
   scrollContainer: {
-    flexGrow: 0.4, // ให้พื้นที่ Scroll ยืดออกไปจนสุดหน้าจอได้
-    padding: 20, // เว้นระยะห่างจากขอบจอ 20px
-    alignItems: 'center', // จัดเนื้อหาทั้งหมดให้อยู่กึ่งกลางหน้าจอแนวนอน
-    justifyContent: 'center', // จัดเนื้อหาให้อยู่กึ่งกลางแนวตั้ง (กรณีเนื้อหาน้อยกว่าจอ)
+    // การใช้ flexGrow: 0.5 หรือน้อยกว่า 1 มักจะทำให้เนื้อหาจัดกึ่งกลางได้ดีขึ้นเมื่อเนื้อหาน้อย
+    // แต่ถ้าเนื้อหาเยอะ อาจจะต้องปรับเป็น 1 เพื่อให้ Scroll ได้เต็มที่
+    flexGrow: 0.5,
+    padding: 20, // เว้นระยะห่างเนื้อหาจากขอบหน้าจอซ้าย-ขวา-บน-ล่าง
+    alignItems: 'center', // จัดเนื้อหาที่อยู่ภายในให้อยู่กึ่งกลางหน้าจอ (แนวนอน)
+    justifyContent: 'center', // จัดเนื้อหาที่อยู่ภายในให้อยู่กึ่งกลางหน้าจอ (แนวตั้ง)
   },
   section: {
-    width: '100%',
-    maxWidth: 800, // จำกัดความกว้างสูงสุดไว้ที่ 800px เพื่อไม่ให้หน้าเว็บกว้างเกินไปบนจอคอม
-    alignItems: 'flex-start', // จัดให้เนื้อหาใน Section ชิดซ้ายเป็นค่าเริ่มต้น
+    width: '100%', // ให้ Section ขยายความกว้างเต็มพื้นที่ที่กำหนด
+    maxWidth: 800, // จำกัดความกว้างสูงสุดไว้ที่ 800px เพื่อไม่ให้หน้าเว็บกว้างเกินไปเวลาเปิดบนจอคอมพิวเตอร์ใหญ่ๆ
+    alignItems: 'flex-start', // จัดเนื้อหาภายใน Section (เช่น ข้อความ) ให้ชิดซ้ายเป็นค่าเริ่มต้น
+    marginVertical: 20, // เว้นระยะห่างด้านบนและด้านล่างของแต่ละ Section
   },
 
+  // ==========================================
   // 2. แถบนำทางด้านบน (Navbar)
+  // ==========================================
   navbar: {
-    flexDirection: 'row', // จัดเรียงโลโก้และเมนูเป็นแนวนอน
-    justifyContent: 'space-between', // ดันโลโก้ไปซ้ายสุด ดันเมนูไปขวาสุด
-    alignItems: 'center', // จัดให้อยู่กึ่งกลางแนวตั้งของแถบ Navbar
-    paddingHorizontal: 20, // เว้นระยะขอบซ้าย-ขวา
-    paddingVertical: 20, // เว้นระยะขอบบน-ล่างให้ Navbar ดูหนาขึ้น
-    borderBottomWidth: 1, // เส้นขอบบางๆ ด้านล่าง Navbar
-    zIndex: 10, // ทำให้ Navbar ลอยอยู่เหนือเนื้อหาอื่นๆ เสมอ
+    flexDirection: 'row', // จัดเรียงโลโก้และกลุ่มเมนูให้อยู่ในบรรทัดเดียวกัน (แนวนอน)
+    justifyContent: 'space-between', // ดันโลโก้ไปชิดซ้ายสุด และกลุ่มเมนูไปชิดขวาสุด
+    alignItems: 'center', // จัดให้โลโก้และเมนูอยู่กึ่งกลางความสูงของ Navbar
+    paddingHorizontal: 20, // เว้นระยะขอบซ้าย-ขวา ภายใน Navbar
+    paddingVertical: 20, // เว้นระยะขอบบน-ล่าง ภายใน Navbar (ทำให้ Navbar ดูหนาขึ้น)
+    borderBottomWidth: 1, // เส้นขอบล่างของ Navbar
+    zIndex: 10, // ลำดับชั้นการแสดงผล (ยิ่งเยอะยิ่งอยู่บนสุด) เพื่อให้ Navbar ลอยอยู่เหนือเนื้อหาอื่นๆ
   },
   logo: {
-    fontSize: 24,
-    fontWeight: 'bold', // ตัวหนาสำหรับโลโก้
+    fontSize: 24, // ขนาดตัวอักษรของโลโก้
+    fontWeight: 'bold', // ทำตัวอักษรโลโก้ให้หนา
   },
   menuContainer: {
-    flexDirection: 'row', // จัดเรียงเมนูแต่ละหน้าเป็นแนวนอน
-    gap: 20, // เว้นระยะห่างระหว่างเมนู 20px
-    marginRight: 10, // เว้นระยะห่างจากปุ่มสลับธีม
+    flexDirection: 'row', // จัดเรียงรายการเมนู (Home, About...) ในแนวนอน
+    gap: 20, // ระยะห่างระหว่างปุ่มเมนูแต่ละอัน
+    marginRight: 10, // ระยะห่างจากกลุ่มเมนูไปหาปุ่มเปลี่ยนภาษา
   },
   menuItem: {
-    fontSize: 16,
-    marginHorizontal: 10, // เว้นระยะซ้ายขวาของข้อความเมนู
+    fontSize: 16, // ขนาดตัวอักษรของเมนู
+    marginHorizontal: 10, // ระยะห่างซ้าย-ขวา ภายนอกของข้อความเมนู
+  },
+  langBtn: {
+    paddingHorizontal: 12, // พื้นที่ว่างภายในปุ่มเปลี่ยนภาษา (ซ้าย-ขวา)
+    paddingVertical: 8, // พื้นที่ว่างภายในปุ่มเปลี่ยนภาษา (บน-ล่าง)
+    borderRadius: 8, // ความโค้งมนของมุมปุ่มเปลี่ยนภาษา
+    borderWidth: 1, // ความหนาของเส้นขอบปุ่มเปลี่ยนภาษา
+    marginLeft: 10, // ระยะห่างจากปุ่มเมนูด้านซ้าย
   },
   toggleBtn: {
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-    borderRadius: 20, // ทำปุ่มสลับธีม (Dark/Light) ให้มีความโค้งมนแบบแคปซูล
-    marginLeft: 10,
+    paddingHorizontal: 15, // พื้นที่ว่างภายในปุ่มสลับธีม (ซ้าย-ขวา)
+    paddingVertical: 8, // พื้นที่ว่างภายในปุ่มสลับธีม (บน-ล่าง)
+    borderRadius: 20, // ทำปุ่มให้มีความโค้งมนแบบแคปซูล (เพราะค่าเยอะ)
+    marginLeft: 10, // ระยะห่างจากปุ่มที่อยู่ด้านซ้าย
   },
 
+  // ==========================================
   // 3. รูปภาพโปรไฟล์ (หน้า Home)
+  // ==========================================
   profileImage: {
-    width: 150, // ความกว้างรูป (หากอยากให้ใหญ่ขึ้น ให้ปรับตัวนี้)
-    height: 150, // ความสูงรูป (ควรปรับให้เท่ากับความกว้าง)
-    borderRadius: 75, // ทำเป็นรูปวงกลม (ต้องเป็น "ครึ่งหนึ่ง" ของ width/height เสมอ)
-    borderWidth: 3, // ความหนาของเส้นขอบรอบรูป
-    marginBottom: 10, // ระยะห่างด้านล่างระหว่างรูปกับข้อความ
+    width: 250, // ความกว้างของรูปโปรไฟล์
+    height: 250, // ความสูงของรูปโปรไฟล์ (ต้องเท่ากับความกว้างเพื่อทำวงกลม)
+    borderRadius: 125, // ต้องมีค่าเป็นครึ่งหนึ่งของ width/height เสมอ เพื่อให้รูปเป็นวงกลมสมบูรณ์
+    borderWidth: 4, // ความหนาของเส้นขอบรอบรูป
+    marginBottom: 20, // ระยะห่างด้านล่างระหว่างรูปกับข้อความ
   },
   title: {
-    fontSize: 40,
-    fontWeight: '900', // ตัวหนามากสำหรับชื่อของคุณในหน้า Home
-    marginBottom: 10,
+    fontSize: 40, // ขนาดตัวอักษรของชื่อ (เช่น ชื่อคุณ)
+    fontWeight: '900', // ตัวหนามาก (เกือบหนาสุด)
+    marginBottom: 10, // ระยะห่างด้านล่างของชื่อ
   },
 
-  // 4. เมนู Pop-up (สำหรับหน้าจอมือถือ)
+  // ==========================================
+  // 4. เมนู Pop-up (สำหรับหน้าจอมือถือ - Modal)
+  // ==========================================
   fullScreenMenu: {
-    flex: 1,
-    justifyContent: 'center', // จัดเมนูให้อยู่กลางจอมือถือแนวตั้ง
-    alignItems: 'center', // จัดเมนูให้อยู่กลางจอมือถือแนวนอน
+    flex: 1, // ให้ Modal บังเต็มหน้าจอ
+    justifyContent: 'center', // จัดรายการเมนูให้อยู่กึ่งกลางหน้าจอ (แนวตั้ง)
+    alignItems: 'center', // จัดรายการเมนูให้อยู่กึ่งกลางหน้าจอ (แนวนอน)
   },
   closeButton: {
-    position: 'absolute', // ทำให้ปุ่มกากบาทลอยอิสระ
-    top: 20, // ชิดด้านบน
-    right: 25, // ชิดขวา
-    padding: 10,
+    position: 'absolute', // ทำให้ปุ่มกากบาท(X) ลอยอิสระ ไม่ไปรบกวนเลย์เอาต์เมนู
+    top: 20, // ระยะห่างจากขอบบนหน้าจอ
+    right: 25, // ระยะห่างจากขอบขวาหน้าจอ
+    padding: 10, // พื้นที่ให้กดปุ่มกากบาทได้ง่ายขึ้น
   },
   mobileMenuText: {
-    fontSize: 28, // ขนาดตัวอักษรเมนูบนมือถือ (ใหญ่กว่าปกติเพื่อให้กดง่าย)
+    fontSize: 28, // ขนาดตัวอักษรเมนูบนมือถือ (มักจะใหญ่กว่าจอคอมเพื่อให้กดง่าย)
   },
 
+  // ==========================================
   // 5. สไตล์สำหรับหน้า About Me
+  // ==========================================
   sectionTitle: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    marginBottom: 20, // ระยะห่างด้านล่างของหัวข้อ About Me
+    fontSize: 36, // ขนาดตัวอักษรหัวข้อใหญ่ (เช่น About Me)
+    fontWeight: 'bold', // ตัวหนา
+    marginBottom: 20, // ระยะห่างจากหัวข้อใหญ่ไปยังเนื้อหาด้านล่าง
   },
   subTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginTop: 30, // ดันหัวข้อ My Skills ให้ห่างจากข้อมูลด้านบน
-    marginBottom: 15,
+    fontSize: 24, // ขนาดตัวอักษรหัวข้อย่อย (เช่น My Skills)
+    fontWeight: 'bold', // ตัวหนา
+    marginTop: 30, // ระยะห่างจากข้อมูลด้านบน
+    marginBottom: 15, // ระยะห่างไปยังหลอดพลังด้านล่าง
   },
   aboutText: {
-    fontSize: 16,
-    lineHeight: 28, // ความห่างระหว่างบรรทัดให้อ่านง่ายขึ้น
-    marginBottom: 30,
+    fontSize: 16, // ขนาดตัวอักษรของข้อความแนะนำตัว
+    lineHeight: 28, // ความสูงของบรรทัด (ยิ่งเยอะ ยิ่งห่างกัน ทำให้อ่านง่าย)
+    marginBottom: 30, // ระยะห่างก่อนถึงส่วนข้อมูลส่วนตัว (Name, Email...)
   },
 
   // --- ส่วนข้อมูลส่วนตัว (Name, Email, Location) ---
   infoGrid: {
-    flexDirection: 'row', // เรียงข้อมูลจากซ้ายไปขวา
-    flexWrap: 'wrap', // ถ้าพื้นที่หน้าจอไม่พอ ให้ปัดข้อมูลลงไปบรรทัดใหม่
-    justifyContent: 'space-between',
-    width: '100%',
+    flexDirection: 'row', // เรียงข้อมูล (Label กับ Value) ไปทางเดียวกัน (แนวนอน)
+    flexWrap: 'wrap', // อนุญาตให้ตัดข้อความลงบรรทัดใหม่ได้ถ้าพื้นที่หน้าจอแคบเกินไป
+    justifyContent: 'space-between', // กระจายคอลัมน์ข้อมูลให้อยู่ห่างกัน (ซ้าย-ขวา)
+    width: '100%', // ให้ตารางข้อมูลกว้างเต็มที่ของ Section
   },
   infoItem: {
-    flexDirection: 'row', // เรียง หัวข้อ(Label) กับ ค่า(Value) ให้อยู่บรรทัดเดียวกัน
-    marginBottom: 15, // ระยะห่างของแต่ละบรรทัด
+    flexDirection: 'row', // จัดเรียง Label (เช่น "Name:") และ Value (เช่น ชื่อคุณ) ให้อยู่บรรทัดเดียวกัน
+    marginBottom: 15, // ระยะห่างแต่ละบรรทัดของข้อมูล
   },
   infoLabel: {
-    fontWeight: 'bold',
-    width: 90, // ล็อกความกว้างของหัวข้อ (เช่น Name:, Email:) ให้ตรงกันเป็นระเบียบ
-    fontSize: 16,
+    fontWeight: 'bold', // ตัวหนาสำหรับหัวข้อ (เช่น Name:)
+    width: 100, // ล็อกความกว้างของ Label ไว้ เพื่อให้ข้อมูล (Value) ที่อยู่ด้านหลังเรียงกันเป็นระเบียบ
+    fontSize: 16, // ขนาดตัวอักษร
   },
   infoValue: {
-    fontSize: 16,
-    flex: 1, // ปล่อยให้ข้อความ (เช่น ชื่อของคุณ) ใช้พื้นที่ที่เหลือไปจนสุด
+    fontSize: 16, // ขนาดตัวอักษร
+    flex: 1, // ปล่อยให้ Value (ข้อมูล) กินพื้นที่ส่วนที่เหลือทั้งหมดในบรรทัดนั้น
   },
 
   // --- ส่วนหลอดพลังทักษะ (Skills Progress Bar) ---
@@ -387,21 +485,21 @@ const styles = StyleSheet.create({
     width: '100%', // ให้กล่องทักษะกว้างเต็ม Section
   },
   skillItem: {
-    marginBottom: 20, // ระยะห่างระหว่างทักษะแต่ละอัน
+    marginBottom: 20, // ระยะห่างระหว่างหลอดพลังทักษะแต่ละอัน
   },
   skillHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between', // แยกชื่อทักษะไว้ซ้าย ดันเปอร์เซ็นต์ไปขวาสุด
+    flexDirection: 'row', // เรียงชื่อทักษะ (เช่น React) กับเปอร์เซ็นต์ (เช่น 90%) ให้อยู่บรรทัดเดียวกัน
+    justifyContent: 'space-between', // ดันชื่อทักษะไปซ้ายสุด และดันเปอร์เซ็นต์ไปขวาสุด
     marginBottom: 8, // ระยะห่างระหว่างชื่อทักษะกับตัวหลอดพลัง
   },
   progressBarBg: {
-    width: '100%',
+    width: '100%', // ความกว้างของหลอดพลังพื้นหลัง (หลอดเปล่า)
     height: 8, // ความหนาของหลอดพลัง
-    borderRadius: 4, // ความโค้งมนของหลอดพลัง
-    overflow: 'hidden', // กันไม่ให้สีที่เติม (Fill) ล้นออกนอกกรอบ
+    borderRadius: 4, // ความโค้งมนของขอบหลอดพลัง
+    overflow: 'hidden', // คำสั่งสำคัญ: ป้องกันไม่ให้สี (Fill) ที่เติมลงไป ล้นออกนอกความโค้งมนของหลอดพื้นหลัง
   },
   progressBarFill: {
-    height: '100%', // เติมสีให้เต็มความสูงของหลอด (8px)
-    borderRadius: 4,
+    height: '100%', // ให้สีที่เติม มีความสูงเต็มหลอด
+    borderRadius: 4, // ความโค้งมนของสีที่เติม (ควรเท่ากับหลอดพื้นหลัง)
   },
 });
