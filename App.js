@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { Sun2, Moon3 } from 'reicon-react-native';
 import {
   View,
   Text,
@@ -8,6 +10,8 @@ import {
   useWindowDimensions,
   Modal,
   Image,
+  Linking, // 🔴 1. เพิ่มคำนี้เข้าไปครับ
+  Platform, // 🔴 2. เพิ่มคำนี้เข้าไปด้วยครับ
 } from 'react-native';
 
 // ==========================================
@@ -41,6 +45,13 @@ const translations = {
       freelanceValue: 'Available',
       skillsTitle: 'My Skills',
     },
+    portfolio: {
+      title: 'My Portfolio',
+      subtitle: 'Here are some of my recent works and projects.',
+      viewProject: 'View Project',
+      project1Title: 'SmartWaste Realtime Analysis', // 🔴 เพิ่มชื่อภาษาอังกฤษ
+      project1Category: 'Web Application',
+    },
   },
   th: {
     nav: {
@@ -69,6 +80,13 @@ const translations = {
       freelanceValue: 'รับงาน',
       skillsTitle: 'ทักษะของฉัน',
     },
+    portfolio: {
+      title: 'ผลงานของฉัน',
+      subtitle: 'นี่คือตัวอย่างผลงานและโปรเจกต์บางส่วนที่ผ่านมาของผม',
+      viewProject: 'ดูผลงาน',
+      project1Title: 'ระบบคัดแยกขยะ AI', // 🔴 เพิ่มชื่อภาษาไทย
+      project1Category: 'เว็บแอปพลิเคชัน',
+    },
   },
 };
 
@@ -91,6 +109,7 @@ export default function PortfolioWeb() {
     accent: '#38BDF8',
     toggleBtn: isDarkMode ? '#FFFFFF' : '#000000',
     toggleText: isDarkMode ? '#000000' : '#FFFFFF',
+    white: '#FFFF',
   };
 
   const handleMenuPress = (item) => {
@@ -110,7 +129,7 @@ export default function PortfolioWeb() {
       ]}
     >
       <Text style={[styles.logo, { color: theme.text }]}>
-        Devis<Text style={{ color: theme.accent }}>.</Text>
+        PT<Text style={{ color: theme.accent }}>.</Text>
       </Text>
 
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 15 }}>
@@ -154,12 +173,23 @@ export default function PortfolioWeb() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.toggleBtn, { backgroundColor: theme.toggleBtn }]}
+          style={[
+            styles.toggleBtn,
+            {
+              backgroundColor: theme.toggleBtn,
+              // เพิ่มการจัดกึ่งกลางให้ไอคอน
+              justifyContent: 'center',
+              alignItems: 'center',
+            },
+          ]}
           onPress={() => setIsDarkMode(!isDarkMode)}
         >
-          <Text style={{ color: theme.toggleText, fontWeight: 'bold' }}>
-            {isDarkMode ? 'Light' : 'Dark'}
-          </Text>
+          {isDarkMode ? (
+            <Sun2 weight="Filled" size={20} color={theme.toggleText} />
+          ) : (
+            // สมมติว่ามีไอคอน Moon สำหรับโหมดสว่าง (ถ้าชื่ออื่น ปรับแก้ได้เลยครับ)
+            <Moon3 weight="Filled" size={20} color={theme.toggleText} />
+          )}
         </TouchableOpacity>
 
         {isMobile && (
@@ -213,7 +243,7 @@ export default function PortfolioWeb() {
   const renderHome = () => (
     <View style={[styles.section, { alignItems: 'center' }]}>
       <Image
-        source={require('./assets/icon.png')}
+        source={require('./assets/profile.png')}
         style={[styles.profileImage, { borderColor: theme.accent }]}
       />
       <Text
@@ -245,6 +275,26 @@ export default function PortfolioWeb() {
       </Text>
       <TouchableOpacity
         style={{ backgroundColor: theme.accent, padding: 15, borderRadius: 8 }}
+        onPress={() => {
+          // 🔴 นำลิงก์ Direct Download ของ Google Drive มาใส่ตรงนี้
+          const cvFileUrl =
+            'https://drive.google.com/file/d/1yAyHFj9qqi7C0NTTuADvIktWrKntLVCM/view?usp=sharing';
+
+          if (Platform.OS === 'web') {
+            // โค้ดสำหรับเว็บ (บังคับดาวน์โหลด)
+            const link = document.createElement('a');
+            link.href = cvFileUrl;
+            link.download = 'public/Resume.pdf'; // ตรงนี้อาจจะถูกข้ามไปถ้าโหลดผ่านเซิร์ฟเวอร์ภายนอก แต่ใส่ไว้เพื่อความสมบูรณ์ครับ
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+          } else {
+            // โค้ดสำหรับ Mobile App
+            Linking.openURL(cvFileUrl).catch((err) =>
+              console.error('Error opening URL:', err),
+            );
+          }
+        }}
       >
         <Text style={{ color: '#000', fontWeight: 'bold' }}>
           {t.home.downloadCv}
@@ -284,15 +334,19 @@ export default function PortfolioWeb() {
       <Text style={[styles.sectionTitle, { color: theme.text }]}>
         {t.about.title}
       </Text>
+      {/* 🔴 เพิ่มเส้นขีดใต้หัวข้อตรงนี้ครับ (ดึงสีฟ้า theme.accent มาใช้) */}
+      <View style={[styles.dividerabout, { backgroundColor: theme.white }]}>
+        <View
+          style={[styles.dividerabout2, { backgroundColor: theme.accent }]}
+        />
+      </View>
       <Text style={[styles.aboutText, { color: theme.subText }]}>
         {t.about.description}
       </Text>
-
       <View style={styles.infoGrid}>
         {[
-          // 🔴 ดึงชื่อจาก t.home.name (เพื่อให้เปลี่ยนตามภาษาเหมือนหน้า Home)
+          //  ดึงชื่อจาก t.home.name (เพื่อให้เปลี่ยนตามภาษาเหมือนหน้า Home)
           { label: t.about.nameLabel, value: t.home.name },
-
           { label: t.about.emailLabel, value: 'your.email@example.com' },
           { label: t.about.locationLabel, value: t.about.locationValue },
           { label: t.about.freelanceLabel, value: t.about.freelanceValue },
@@ -317,8 +371,119 @@ export default function PortfolioWeb() {
       <View style={styles.skillsContainer}>
         {renderSkill('React Native', '90%')}
         {renderSkill('React.js', '85%')}
+        {renderSkill('HTML/CSS', '80%')}
         {renderSkill('JavaScript / TypeScript', '80%')}
-        {renderSkill('Node.js', '75%')}
+        {renderSkill('Python', '75%')}
+        {renderSkill('Node.js', '70%')}
+      </View>
+    </View>
+  );
+
+  // --- ข้อมูลผลงานจำลอง (สามารถเปลี่ยนชื่อ รูป และหมวดหมู่ได้ตามจริง) ---
+  const portfolioProjects = [
+    {
+      id: 1,
+      //  ดึงชื่อจาก translations มาใส่แทนการพิมพ์ข้อความแข็งๆ
+      title: t.portfolio.project1Title,
+      category: t.portfolio.project1Category,
+      img: require('./img/icon-SmartWaste Realtime-Analysis.jpg'),
+      link: 'https://recowaste.vercel.app/',
+      github: 'https://github.com/your-username/recowaste', //  เพิ่มลิงก์ GitHub ของโปรเจก
+    },
+    {
+      id: 2,
+      title: 'Food Delivery App',
+      category: 'React Native',
+      img: 'https://via.placeholder.com/400x300/1E293B/38BDF8?text=Project+2',
+      link: 'https://play.google.com/store/apps/details?id=your.app.id', // 🔴 เพิ่มลิงก์ปลายทางตรงนี้
+    },
+    // ... โปรเจกต์อื่นๆ ก็ใส่ link เพิ่มเข้าไปให้ครบครับ
+  ];
+
+  // --- หน้า Portfolio (โปรไฟล์ผลงาน) ---
+  const renderPortfolio = () => (
+    <View style={styles.section}>
+      <Text style={[styles.sectionTitle, { color: theme.text }]}>
+        {t.portfolio.title}
+      </Text>
+      {/* 🔴 เพิ่มเส้นขีดใต้หัวข้อตรงนี้ครับ (ดึงสีฟ้า theme.accent มาใช้) */}
+      <View style={[styles.dividerportfolio, { backgroundColor: theme.white }]}>
+        <View
+          style={[styles.dividerportfolio2, { backgroundColor: theme.accent }]}
+        />
+      </View>
+      <Text style={[styles.aboutText, { color: theme.subText }]}>
+        {t.portfolio.subtitle}
+      </Text>
+
+      <View style={styles.portfolioGrid}>
+        {portfolioProjects.map((project) => (
+          <View
+            key={project.id}
+            // เช็คขนาดจอ: มือถือให้กว้าง 100%, จอคอมให้กว้าง 31% (เรียง 3 คอลัมน์พอดี)
+            style={[
+              styles.portfolioCard,
+              {
+                backgroundColor: isDarkMode ? '#1E293B' : '#F8FAFC',
+                width: isMobile ? '100%' : '50%',
+                borderColor: isDarkMode ? '#334155' : '#E2E8F0',
+              },
+            ]}
+          >
+            <Image
+              source={
+                typeof project.img === 'string'
+                  ? { uri: project.img }
+                  : project.img
+              }
+              style={styles.portfolioImage}
+            />
+            <View style={styles.portfolioCardContent}>
+              <Text
+                style={[styles.portfolioTitle, { color: theme.text }]}
+                numberOfLines={1}
+              >
+                {project.title}
+              </Text>
+              <Text style={{ color: theme.accent, marginBottom: 15 }}>
+                {project.category}
+              </Text>
+              <TouchableOpacity
+                onPress={() => {
+                  if (project.link) {
+                    Linking.openURL(project.link).catch((err) =>
+                      console.error('Error opening URL:', err),
+                    );
+                  } else {
+                    // ดักไว้เผื่อโปรเจกต์ไหนยังไม่มีลิงก์
+                    alert('ลิงก์ผลงานนี้ยังไม่พร้อมใช้งานครับ');
+                  }
+                }}
+              >
+                <Text style={{ color: theme.text, fontWeight: 'bold' }}>
+                  {t.portfolio.viewProject} ➔
+                </Text>
+              </TouchableOpacity>
+              {/* 🔴 ปุ่ม GitHub: บังคับให้อยู่ ขวา-ล่าง-สุด ของการ์ด */}
+              {project.github && (
+                <TouchableOpacity
+                  style={{
+                    position: 'absolute', // บังคับลอยตัวอิสระ
+                    bottom: 20, // ห่างจากขอบล่าง 20px
+                    right: 20, // ห่างจากขอบขวา 20px
+                  }}
+                  onPress={() => {
+                    Linking.openURL(project.github).catch((err) =>
+                      console.error('Error', err),
+                    );
+                  }}
+                >
+                  <Ionicons name="logo-github" size={26} color={theme.text} />
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        ))}
       </View>
     </View>
   );
@@ -330,8 +495,8 @@ export default function PortfolioWeb() {
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         {activeTab === 'Home' && renderHome()}
         {activeTab === 'About' && renderAbout()}
-
-        {['Portfolio', 'Blog', 'Contact'].includes(activeTab) && (
+        {activeTab === 'Portfolio' && renderPortfolio()}
+        {['Blog', 'Contact'].includes(activeTab) && (
           <View style={[styles.section, { alignItems: 'center' }]}>
             <Text style={[styles.title, { color: theme.text }]}>
               {activeTab} Page
@@ -438,7 +603,21 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 36, // ขนาดตัวอักษรหัวข้อใหญ่ (เช่น About Me)
     fontWeight: 'bold', // ตัวหนา
-    marginBottom: 20, // ระยะห่างจากหัวข้อใหญ่ไปยังเนื้อหาด้านล่าง
+    marginBottom: 10, // ระยะห่างจากหัวข้อใหญ่ไปยังเนื้อหาด้านล่าง
+  },
+  dividerabout: {
+    width: 160,
+    height: 4,
+    borderRadius: 2,
+    marginBottom: 10,
+    overflow: 'hidden',
+    alignItems: 'center', // 🔴 เพิ่มคำสั่งนี้: จัดให้เส้นสีทอง(ลูก) อยู่กึ่งกลางแนวนอนอัตโนมัติ
+  },
+  dividerabout2: {
+    width: 100,
+    height: 4,
+    borderRadius: 2,
+    // ไม่ต้องใส่ marginLeft หรือ padding อะไรเลยครับ ระบบจะจัดกลางให้อัตโนมัติ
   },
   subTitle: {
     fontSize: 24, // ขนาดตัวอักษรหัวข้อย่อย (เช่น My Skills)
@@ -494,5 +673,46 @@ const styles = StyleSheet.create({
   progressBarFill: {
     height: '100%', // ให้สีที่เติม มีความสูงเต็มหลอด
     borderRadius: 4, // ความโค้งมนของสีที่เติม (ควรเท่ากับหลอดพื้นหลัง)
+  },
+  // 6. สไตล์สำหรับหน้า Portfolio
+  portfolioGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap', // ปัดผลงานลงบรรทัดใหม่ถ้าพื้นที่ไม่พอ
+    justifyContent: 'space-between', // กระจายคอลัมน์ให้มีช่องไฟเท่ากัน
+    width: '100%',
+    marginTop: 10,
+  },
+  portfolioCard: {
+    borderRadius: 12, // ขอบการ์ดผลงานมน
+    overflow: 'hidden', // กันรูปภาพล้นขอบมุมที่มนไว้
+    marginBottom: 24, // ระยะห่างด้านล่างระหว่างการ์ด
+    borderWidth: 1, // เพิ่มเส้นขอบบางๆ ให้การ์ดดูมีมิติ
+  },
+  portfolioImage: {
+    width: '100%',
+    height: 200, // ความสูงของรูปผลงาน (ปรับได้ตามต้องการ)
+    resizeMode: 'cover', // จัดรูปภาพให้เต็มกรอบโดยรักษาสัดส่วน
+  },
+  portfolioCardContent: {
+    padding: 20, // พื้นที่ว่างภายในเนื้อหาใต้รูปภาพ
+  },
+  portfolioTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  dividerportfolio: {
+    width: 200,
+    height: 4,
+    borderRadius: 2,
+    marginBottom: 10,
+    overflow: 'hidden',
+    alignItems: 'center', // 🔴 เพิ่มคำสั่งนี้: จัดให้เส้นสีทอง(ลูก) อยู่กึ่งกลางแนวนอนอัตโนมัติ
+  },
+  dividerportfolio2: {
+    width: 140,
+    height: 4,
+    borderRadius: 2,
+    // ไม่ต้องใส่ marginLeft หรือ padding อะไรเลยครับ ระบบจะจัดกลางให้อัตโนมัติ
   },
 });
