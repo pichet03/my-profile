@@ -1,17 +1,19 @@
-import React, { useState } from 'react';
-import { Ionicons } from '@expo/vector-icons';
-import { Sun2, Moon3 } from 'reicon-react-native';
+import React, { useState, useRef } from 'react';
+import { Ionicons, Feather, Fontisto, Entypo } from '@expo/vector-icons';
+import { Sun2, Moon3, PinWave, Envelope, Phone } from 'reicon-react-native';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
+  SafeAreaView,
   TouchableOpacity,
   useWindowDimensions,
   Modal,
   Image,
   Linking, // 🔴 1. เพิ่มคำนี้เข้าไปครับ
   Platform, // 🔴 2. เพิ่มคำนี้เข้าไปด้วยครับ
+  TextInput,
 } from 'react-native';
 
 // ==========================================
@@ -36,7 +38,7 @@ const translations = {
     about: {
       title: 'About Me',
       description:
-        'I am a passionate Full Stack Developer based in Khon Kaen, Thailand. I have a strong interest in building modern, responsive web and mobile applications. I love learning new technologies and solving complex problems with clean code.',
+        'A passionate developer dedicated to Machine Learning and Web Development, backed by a strong foundation in business statistics. Experienced in building and training AI models, particularly in Image Classification, as well as data management and backend development for web applications. Eager to learn and adopt new technologies to solve complex problems efficiently',
       nameLabel: 'Name:',
       emailLabel: 'Email:',
       locationLabel: 'Location:',
@@ -44,6 +46,13 @@ const translations = {
       freelanceLabel: 'Freelance:',
       freelanceValue: 'Available',
       skillsTitle: 'My Skills',
+      skillsTitle1: 'Programming Languages',
+      skillsTitle2: 'Machine Learning & AI',
+      skillsTitle3: 'Web & Backend Development',
+      skillsTitle4: 'IT Support & Configuration',
+      skillsTitle5: 'Development Tools & IDEs',
+      skillsTitle6: 'Software Installation & Configuration',
+      skillsTitle7: 'System Maintenance',
     },
     portfolio: {
       title: 'My Portfolio',
@@ -51,6 +60,26 @@ const translations = {
       viewProject: 'View Project',
       project1Title: 'SmartWaste Realtime Analysis', // 🔴 เพิ่มชื่อภาษาอังกฤษ
       project1Category: 'Web Application',
+    },
+    blog: {
+      title: 'Latest News & Articles',
+      subtitle: 'My thoughts on technology, development, and design.',
+      readMore: 'Read More ➔',
+      post1Title: 'How to build a website with React Native Web',
+      post2Title: 'Understanding Modern UI/UX Design',
+    },
+    contact: {
+      title: 'Get In Touch',
+      subtitle:
+        'Feel free to reach out for collaborations or just a friendly hello.',
+      infoTitle: 'Contact Information',
+      location: 'Sawathi, Khon Kaen, Thailand', // ดึงข้อมูลสถานที่ปัจจุบันของคุณมาให้ครับ
+      emailLabel: 'Email',
+      phoneLabel: 'Phone',
+      namePlaceholder: 'Your Name',
+      emailPlaceholder: 'Your Email',
+      messagePlaceholder: 'Your Message',
+      sendButton: 'Send Message',
     },
   },
   th: {
@@ -71,7 +100,7 @@ const translations = {
     about: {
       title: 'เกี่ยวกับฉัน',
       description:
-        'ผมเป็น Full Stack Developer ที่หลงใหลในการเขียนโค้ด อาศัยอยู่ที่จังหวัดขอนแก่น มีความสนใจในการสร้างเว็บและแอปพลิเคชันมือถือที่ทันสมัย ผมชอบเรียนรู้เทคโนโลยีใหม่ๆ และแก้ปัญหาด้วยโค้ดที่สะอาดสะอ้าน',
+        'นักพัฒนาที่มีความหลงใหลในงานด้าน Machine Learning และ Web Development มีพื้นฐานความเข้าใจด้านสถิติธุรกิจที่แข็งแกร่ง มีประสบการณ์ในการสร้างและฝึกสอนโมเดลปัญญาประดิษฐ์ โดยเฉพาะงานด้าน Image Classification รวมไปถึงการจัดการข้อมูลและการพัฒนา Backend สำหรับเว็บแอปพลิเคชัน พร้อมเรียนรู้เทคโนโลยีใหม่ๆ เพื่อนำมาใช้แก้ปัญหาอย่างมีประสิทธิภาพ',
       nameLabel: 'ชื่อ:',
       emailLabel: 'อีเมล:',
       locationLabel: 'ที่อยู่:',
@@ -79,6 +108,14 @@ const translations = {
       freelanceLabel: 'รับงานอิสระ:',
       freelanceValue: 'รับงาน',
       skillsTitle: 'ทักษะของฉัน',
+      skillsTitle1: 'ภาษาโปรแกรม',
+      skillsTitle2: 'การเรียนรู้ของเครื่องและปัญญาประดิษฐ์',
+      skillsTitle3: 'การพัฒนาเว็บไซต์และระบบหลังบ้าน',
+      skillsTitle4: 'การสนับสนุนด้านไอทีและการตั้งค่าระบบ',
+      skillsTitle5: 'เครื่องมือพัฒนาซอฟต์แวร์และ IDE',
+      skillsTitle6: 'การติดตั้งและตั้งค่าซอฟต์แวร์',
+      skillsTitle7: 'แก้ปัญหาทางเทคนิค',
+      skillsTitle8: '',
     },
     portfolio: {
       title: 'ผลงานของฉัน',
@@ -86,6 +123,26 @@ const translations = {
       viewProject: 'ดูผลงาน',
       project1Title: 'ระบบคัดแยกขยะ AI', // 🔴 เพิ่มชื่อภาษาไทย
       project1Category: 'เว็บแอปพลิเคชัน',
+    },
+    blog: {
+      title: 'บทความล่าสุด',
+      subtitle: 'เรื่องราวและมุมมองเกี่ยวกับการพัฒนาซอฟต์แวร์และเทคโนโลยี',
+      readMore: 'อ่านเพิ่มเติม ➔',
+      post1Title: 'วิธีสร้างเว็บไซต์ด้วย React Native Web',
+      post2Title: 'ทำความเข้าใจการออกแบบ UI/UX ในยุคปัจจุบัน',
+    },
+    contact: {
+      title: 'ติดต่อฉัน',
+      subtitle:
+        'หากคุณมีโปรเจกต์ที่น่าสนใจ หรือต้องการพูดคุย ทักทายมาได้เลยครับ',
+      infoTitle: 'ข้อมูลการติดต่อ',
+      location: 'ต.สาวะถี, จ.ขอนแก่น, ประเทศไทย',
+      emailLabel: 'อีเมล',
+      phoneLabel: 'เบอร์โทรศัพท์',
+      namePlaceholder: 'ชื่อของคุณ',
+      emailPlaceholder: 'อีเมลของคุณ',
+      messagePlaceholder: 'ข้อความ...',
+      sendButton: 'ส่งข้อความ',
     },
   },
 };
@@ -95,12 +152,24 @@ export default function PortfolioWeb() {
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [lang, setLang] = useState('en');
+  // 🔴 1. เพิ่ม State สำหรับฟอร์มติดต่อ
+  const [senderName, setSenderName] = useState('');
+  const [senderEmail, setSenderEmail] = useState('');
+  const [senderMessage, setSenderMessage] = useState('');
+  // 🔴 1. สร้าง Ref เพื่อใช้สั่ง Scroll เลื่อนหน้าจอ
+  const scrollViewRef = useRef(null);
+  // 🔴 2. สร้าง State เพื่อเก็บว่าแต่ละ Section อยู่พิกัด Y ที่เท่าไหร่
+  const [sectionY, setSectionY] = useState({
+    Home: 0,
+    About: 0,
+    Portfolio: 0,
+    Blog: 0,
+    Contact: 0,
+  });
 
   const { width } = useWindowDimensions();
   const isMobile = width < 768;
-
   const t = translations[lang];
-
   const theme = {
     bg: isDarkMode ? '#0F172A' : '#FFFFFF',
     navBg: isDarkMode ? '#0F172A' : '#F8FAFC',
@@ -112,9 +181,14 @@ export default function PortfolioWeb() {
     white: '#FFFF',
   };
 
-  const handleMenuPress = (item) => {
-    setActiveTab(item);
-    setIsMenuOpen(false);
+  // 2. ต้องมีฟังก์ชันนี้
+  const handleLayout = (name, event) => {
+    const yPosition = event.nativeEvent.layout.y;
+    // แนะนำให้ปรับเป็นแบบนี้ เพื่อป้องกัน Error "Too many re-renders" (Infinite Loop)
+    setSectionY((prev) => {
+      if (prev[name] === yPosition) return prev; // ถ้าตำแหน่งเดิม ไม่ต้องอัปเดต
+      return { ...prev, [name]: yPosition };
+    });
   };
 
   // --- แถบเมนูด้านบน ---
@@ -347,7 +421,7 @@ export default function PortfolioWeb() {
         {[
           //  ดึงชื่อจาก t.home.name (เพื่อให้เปลี่ยนตามภาษาเหมือนหน้า Home)
           { label: t.about.nameLabel, value: t.home.name },
-          { label: t.about.emailLabel, value: 'your.email@example.com' },
+          { label: t.about.emailLabel, value: 'poaloa232@gmila.com' },
           { label: t.about.locationLabel, value: t.about.locationValue },
           { label: t.about.freelanceLabel, value: t.about.freelanceValue },
         ].map((info, index) => (
@@ -364,9 +438,33 @@ export default function PortfolioWeb() {
           </View>
         ))}
       </View>
-
       <Text style={[styles.subTitle, { color: theme.text }]}>
         {t.about.skillsTitle}
+      </Text>
+      <Text style={[styles.subTitle, { color: theme.text }]}>
+        {t.about.skillsTitle1}
+      </Text>
+      <View style={styles.skillsContainer}>
+        {renderSkill('HTML/CSS', '90%')}
+        {renderSkill('Python', '80%')}
+        {renderSkill('Django', '80%')}
+        {renderSkill('React Native', '70%')}
+        {renderSkill('React.js', '65%')}
+        {renderSkill('JavaScript / TypeScript', '60%')}
+        {renderSkill('Node.js', '60%')}
+      </View>
+      <Text style={[styles.subTitle, { color: theme.text }]}>
+        {t.about.skillsTitle2}
+      </Text>
+      <View style={styles.skillsContainer}>
+        {renderSkill('TensorFlow', '90%')}
+        {renderSkill('Keras', '85%')}
+        {renderSkill('Architectures', '80%')}
+        {renderSkill('Computer Vision', '80%')}
+        {renderSkill('ImageDataGenerator', '75%')}
+      </View>
+      <Text style={[styles.subTitle, { color: theme.text }]}>
+        {t.about.skillsTitle3}
       </Text>
       <View style={styles.skillsContainer}>
         {renderSkill('React Native', '90%')}
@@ -375,6 +473,22 @@ export default function PortfolioWeb() {
         {renderSkill('JavaScript / TypeScript', '80%')}
         {renderSkill('Python', '75%')}
         {renderSkill('Node.js', '70%')}
+      </View>
+      <Text style={[styles.subTitle, { color: theme.text }]}>
+        {t.about.skillsTitle4}
+      </Text>
+      <View style={styles.skillsContainer}>
+        {renderSkill(t.about.skillsTitle6, '90%')}
+        {renderSkill(t.about.skillsTitle7, '90%')}
+      </View>
+      <Text style={[styles.subTitle, { color: theme.text }]}>
+        {t.about.skillsTitle5}
+      </Text>
+      <View style={styles.skillsContainer}>
+        {renderSkill('Visual Studio Code ', '90%')}
+        {renderSkill('Google Colab ', '90%')}
+        {renderSkill('Git', '80%')}
+        {renderSkill('AI-assisted tools', '70%')}
       </View>
     </View>
   );
@@ -386,7 +500,7 @@ export default function PortfolioWeb() {
       //  ดึงชื่อจาก translations มาใส่แทนการพิมพ์ข้อความแข็งๆ
       title: t.portfolio.project1Title,
       category: t.portfolio.project1Category,
-      img: require('./img/icon-SmartWaste Realtime-Analysis.jpg'),
+      img: require('./img/icon-SmartWaste-Realtime-Analysis.jpg'),
       link: 'https://recowaste.vercel.app/',
       github: 'https://github.com/your-username/recowaste', //  เพิ่มลิงก์ GitHub ของโปรเจก
     },
@@ -398,6 +512,25 @@ export default function PortfolioWeb() {
       link: 'https://play.google.com/store/apps/details?id=your.app.id', // 🔴 เพิ่มลิงก์ปลายทางตรงนี้
     },
     // ... โปรเจกต์อื่นๆ ก็ใส่ link เพิ่มเข้าไปให้ครบครับ
+  ];
+  const blogPosts = [
+    {
+      id: 1,
+      title: t.blog.post1Title,
+      date: 'Sep 23, 2026',
+      category: 'Development',
+      // สามารถเปลี่ยนเป็น require('./img/ชื่อรูป.jpg') ได้เหมือนหน้า Portfolio
+      img: 'https://via.placeholder.com/400x200/1E293B/38BDF8?text=Blog+1',
+      link: 'https://example.com/blog/1',
+    },
+    {
+      id: 2,
+      title: t.blog.post2Title,
+      date: 'Aug 15, 2026',
+      category: 'Design',
+      img: 'https://via.placeholder.com/400x200/1E293B/FFD700?text=Blog+2',
+      link: 'https://example.com/blog/2',
+    },
   ];
 
   // --- หน้า Portfolio (โปรไฟล์ผลงาน) ---
@@ -488,22 +621,309 @@ export default function PortfolioWeb() {
     </View>
   );
 
+  const renderBlog = () => (
+    <View style={styles.section}>
+      <Text style={[styles.sectionTitle, { color: theme.text }]}>
+        {t.blog.title}
+      </Text>
+      <Text
+        style={[styles.aboutText, { color: theme.subText, marginBottom: 20 }]}
+      >
+        {t.blog.subtitle}
+      </Text>
+
+      <View style={styles.blogGrid}>
+        {blogPosts.map((post) => {
+          const asset =
+            typeof post.img === 'string' ? { uri: post.img } : post.img;
+
+          return (
+            <View
+              key={post.id}
+              style={[
+                styles.blogCard,
+                {
+                  backgroundColor: theme.cardBg,
+                  borderColor: theme.cardBorder,
+                  width: isMobile ? '100%' : '48%', // บนมือถือแสดง 1 คอลัมน์ บนคอมแสดง 2 คอลัมน์
+                },
+              ]}
+            >
+              <Image source={asset} style={styles.blogImage} />
+
+              <View style={styles.blogCardContent}>
+                <View style={styles.blogMeta}>
+                  <Text
+                    style={{
+                      color: theme.Gold,
+                      fontSize: 12,
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    {post.category}
+                  </Text>
+                  <Text style={{ color: theme.subText, fontSize: 12 }}>
+                    {post.date}
+                  </Text>
+                </View>
+
+                <Text
+                  style={[styles.blogTitle, { color: theme.text }]}
+                  numberOfLines={2}
+                >
+                  {post.title}
+                </Text>
+
+                <TouchableOpacity
+                  style={styles.readMoreBtn}
+                  onPress={() => {
+                    if (post.link)
+                      Linking.openURL(post.link).catch((err) =>
+                        console.error(err),
+                      );
+                  }}
+                >
+                  <Text style={{ color: theme.accent, fontWeight: 'bold' }}>
+                    {t.blog.readMore}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          );
+        })}
+      </View>
+    </View>
+  );
+  const renderContact = () => (
+    <View style={styles.section}>
+      <Text style={[styles.sectionTitle, { color: theme.text }]}>
+        {t.contact.title}
+      </Text>
+      <Text
+        style={[styles.aboutText, { color: theme.subText, marginBottom: 40 }]}
+      >
+        {t.contact.subtitle}
+      </Text>
+
+      <View
+        style={[
+          styles.contactContainer,
+          { flexDirection: isMobile ? 'column' : 'row' },
+        ]}
+      >
+        {/* ส่วนข้อมูลการติดต่อ (ซ้าย) */}
+        <View
+          style={[styles.contactInfo, { width: isMobile ? '100%' : '40%' }]}
+        >
+          <Text style={[styles.contactInfoTitle, { color: theme.text }]}>
+            {t.contact.infoTitle}
+          </Text>
+
+          <TouchableOpacity
+            style={styles.contactInfoItem}
+            onPress={() => {
+              // เปลี่ยนเป็นอีเมลของคุณ
+              Linking.openURL(
+                'https://maps.app.goo.gl/Y3RfmqrPiCgfZUHb6',
+              ).catch((err) => console.error(err));
+            }}
+          >
+            <PinWave size={24} color={theme.accent} />
+            <Text style={[styles.contactInfoText, { color: theme.subText }]}>
+              {t.contact.location}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.contactInfoItem}
+            onPress={() => {
+              // เปลี่ยนเป็นอีเมลของคุณ
+              Linking.openURL('mailto:poaloa232@gmail.com').catch((err) =>
+                console.error(err),
+              );
+            }}
+          >
+            <Envelope size={24} color={theme.accent} />
+            <Text style={[styles.contactInfoText, { color: theme.subText }]}>
+              poaloa232@gmail.com
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.contactInfoItem}
+            onPress={() => {
+              // เปลี่ยน URL ด้านล่างให้เป็นลิงก์โปรไฟล์ Facebook ของคุณ
+              Linking.openURL('https://www.facebook.com/poa555').catch((err) =>
+                console.error(err),
+              );
+            }}
+          >
+            {/* ถ้าใช้ Lucide */}
+            <Feather name="facebook" size={24} color={theme.accent} />
+            <Text style={[styles.contactInfoText, { color: theme.subText }]}>
+              Pichet Thimachai
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.contactInfoItem}
+            onPress={() => {
+              // เปลี่ยน URL ด้านล่างให้เป็นลิงก์โปรไฟล์ Facebook ของคุณ
+              Linking.openURL('https://www.instagram.com/picht2/').catch(
+                (err) => console.error(err),
+              );
+            }}
+          >
+            {/* ถ้าใช้ Lucide */}
+            <Entypo name="instagram" size={24} color={theme.accent} />
+            <Text style={[styles.contactInfoText, { color: theme.subText }]}>
+              picet.pt
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.contactInfoItem}
+            onPress={() => {
+              // เปลี่ยน URL ด้านล่างให้เป็นลิงก์โปรไฟล์ Facebook ของคุณ
+              Linking.openURL('https://line.me/ti/p/p2tIm3leco').catch((err) =>
+                console.error(err),
+              );
+            }}
+          >
+            {/* ถ้าใช้ Lucide */}
+            <Fontisto name="line" size={24} color={theme.accent} />
+            <Text style={[styles.contactInfoText, { color: theme.subText }]}>
+              Pichet Thimachai
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.contactInfoItem}
+            onPress={() => {
+              // เปลี่ยนเป็นเบอร์ของคุณ โดยใช้รูปแบบ tel: ตามด้วยเบอร์
+              Linking.openURL('tel:0803179130').catch((err) =>
+                console.error(err),
+              );
+            }}
+          >
+            <Phone color={theme.accent} size={24} />
+            <Text style={[styles.contactInfoText, { color: theme.subText }]}>
+              +66 803179130
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* ส่วนฟอร์มการติดต่อ (ขวา) */}
+        <View
+          style={[styles.contactForm, { width: isMobile ? '100%' : '55%' }]}
+        >
+          <TextInput
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.cardBg,
+                color: theme.text,
+                borderColor: theme.cardBorder,
+              },
+            ]}
+            placeholder={t.contact.namePlaceholder}
+            placeholderTextColor={theme.subText}
+            value={senderName}
+            onChangeText={setSenderName} // เก็บค่าชื่อเมื่อพิมพ์
+          />
+          <TextInput
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.cardBg,
+                color: theme.text,
+                borderColor: theme.cardBorder,
+              },
+            ]}
+            placeholder={t.contact.emailPlaceholder}
+            placeholderTextColor={theme.subText}
+            keyboardType="email-address"
+            value={senderEmail}
+            onChangeText={setSenderEmail} // เก็บค่าอีเมลเมื่อพิมพ์
+          />
+          <TextInput
+            style={[
+              styles.input,
+              styles.textArea,
+              {
+                backgroundColor: theme.cardBg,
+                color: theme.text,
+                borderColor: theme.cardBorder,
+              },
+            ]}
+            placeholder={t.contact.messagePlaceholder}
+            placeholderTextColor={theme.subText}
+            multiline={true}
+            numberOfLines={5}
+            value={senderMessage}
+            onChangeText={setSenderMessage} // เก็บค่าข้อความเมื่อพิมพ์
+          />
+
+          <TouchableOpacity
+            style={[styles.submitBtn, { backgroundColor: theme.accent }]}
+            onPress={() => {
+              // 🔴 2. ฟังก์ชันจัดรูปแบบข้อความและสั่งเปิดแอปอีเมล
+              if (!senderName || !senderMessage) {
+                alert(
+                  lang === 'th'
+                    ? 'กรุณากรอกชื่อและข้อความ'
+                    : 'Please enter your name and message.',
+                );
+                return;
+              }
+
+              // ตั้งค่าอีเมลปลายทางของคุณ
+              const myEmail = 'poaloa232@gmail.com';
+              // ตั้งหัวข้ออีเมล
+              const subject = `ติดต่อจากเว็บไซต์: ${senderName}`;
+              // จัดรูปแบบเนื้อหาอีเมล
+              const body = `ชื่อ: ${senderName}\nอีเมลติดต่อกลับ: ${senderEmail}\n\nข้อความ:\n${senderMessage}`;
+
+              // ใช้ encodeURIComponent เพื่อป้องกันปัญหาเว้นวรรคและภาษาไทยใน URL
+              const mailtoUrl = `mailto:${myEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+              Linking.openURL(mailtoUrl).catch((err) =>
+                console.error('Error sending email:', err),
+              );
+            }}
+          >
+            <Text style={{ color: '#000', fontWeight: 'bold', fontSize: 16 }}>
+              {t.contact.sendButton}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </View>
+  );
+
   return (
     <View style={[styles.container, { backgroundColor: theme.bg }]}>
       {renderNavbar()}
       {renderMobileMenu()}
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        {activeTab === 'Home' && renderHome()}
-        {activeTab === 'About' && renderAbout()}
-        {activeTab === 'Portfolio' && renderPortfolio()}
-        {['Blog', 'Contact'].includes(activeTab) && (
-          <View style={[styles.section, { alignItems: 'center' }]}>
-            <Text style={[styles.title, { color: theme.text }]}>
-              {activeTab} Page
-            </Text>
-            <Text style={{ color: theme.subText }}>Coming soon...</Text>
-          </View>
-        )}
+
+      {/* 🔴 4. ใส่ ref ให้ ScrollView และเรนเดอร์ทุกส่วนต่อกันลงมา */}
+      <ScrollView
+        ref={scrollViewRef}
+        contentContainerStyle={styles.scrollContainer}
+        scrollEventThrottle={16} // ทำให้ scroll ลื่นขึ้น
+      >
+        <View onLayout={(e) => handleLayout('Home', e)}>{renderHome()}</View>
+
+        <View onLayout={(e) => handleLayout('About', e)}>{renderAbout()}</View>
+
+        <View onLayout={(e) => handleLayout('Portfolio', e)}>
+          {renderPortfolio()}
+        </View>
+
+        <View onLayout={(e) => handleLayout('Blog', e)}>{renderBlog()}</View>
+
+        <View onLayout={(e) => handleLayout('Contact', e)}>
+          {renderContact()}
+        </View>
       </ScrollView>
     </View>
   );
@@ -526,6 +946,8 @@ const styles = StyleSheet.create({
     maxWidth: 800, // จำกัดความกว้างสูงสุดไว้ที่ 800px เพื่อไม่ให้หน้าเว็บกว้างเกินไปเวลาเปิดบนจอคอมพิวเตอร์ใหญ่ๆ
     alignItems: 'flex-start', // จัดเนื้อหาภายใน Section (เช่น ข้อความ) ให้ชิดซ้ายเป็นค่าเริ่มต้น
     marginVertical: 20, // เว้นระยะห่างด้านบนและด้านล่างของแต่ละ Section
+    paddingVertical: 40,
+    paddingHorizontal: 20,
   },
 
   // 2. แถบนำทางด้านบน (Navbar)
@@ -707,12 +1129,90 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     marginBottom: 10,
     overflow: 'hidden',
-    alignItems: 'center', // 🔴 เพิ่มคำสั่งนี้: จัดให้เส้นสีทอง(ลูก) อยู่กึ่งกลางแนวนอนอัตโนมัติ
+    alignItems: 'center', //  เพิ่มคำสั่งนี้: จัดให้เส้นสีทอง(ลูก) อยู่กึ่งกลางแนวนอนอัตโนมัติ
   },
   dividerportfolio2: {
     width: 140,
     height: 4,
     borderRadius: 2,
     // ไม่ต้องใส่ marginLeft หรือ padding อะไรเลยครับ ระบบจะจัดกลางให้อัตโนมัติ
+  },
+  // 7. สไตล์สำหรับหน้า Blog
+  blogGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  blogCard: {
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginBottom: 24,
+    borderWidth: 1,
+  },
+  blogImage: {
+    height: 200,
+    width: '100%',
+    resizeMode: 'cover',
+  },
+  blogCardContent: {
+    padding: 20,
+  },
+  blogMeta: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  blogTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 15,
+    lineHeight: 30,
+  },
+  readMoreBtn: {
+    alignSelf: 'flex-start', // ให้ปุ่มหดขนาดพอดีกับข้อความ
+    marginTop: 5,
+  },
+  // 8. สไตล์สำหรับหน้า Contact
+  contactContainer: {
+    justifyContent: 'space-between',
+    width: '100%',
+    gap: 30, // เว้นระยะห่างระหว่างคอลัมน์
+  },
+  contactInfo: {
+    marginBottom: 30,
+  },
+  contactInfoTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  contactInfoItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  contactInfoText: {
+    fontSize: 16,
+    marginLeft: 15,
+  },
+  contactForm: {
+    width: '100%',
+  },
+  input: {
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 15,
+    marginBottom: 15,
+    fontSize: 16,
+  },
+  textArea: {
+    height: 120,
+    textAlignVertical: 'top', // ให้ข้อความเริ่มพิมพ์จากด้านบนของกล่อง
+  },
+  submitBtn: {
+    paddingVertical: 15,
+    borderRadius: 8,
+    alignItems: 'center',
   },
 });
